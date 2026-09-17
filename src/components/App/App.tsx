@@ -38,6 +38,7 @@ const App = () => {
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
     enabled: query !== "",
+    placeholderData: (previousData) => previousData,
   });
 
   useEffect(() => {
@@ -45,6 +46,13 @@ const App = () => {
       toast.error("No movies found for your request.");
     }
   }, [data]);
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [page]);
 
   return (
     <div className={css.app}>
