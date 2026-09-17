@@ -1,5 +1,6 @@
 import { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
 
 import SearchBar from "../SearchBar/SearchBar";
 import MovieGrid from "../MovieGrid/MovieGrid";
@@ -13,42 +14,31 @@ import type { Movie } from "../../types/movie";
 import css from "./App.module.css";
 
 const App = () => {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const handleSearch = async (query: string): Promise<void> => {
-    setLoading(true);
-    setError(false);
-    setMovies([]);
-
-    try {
-      const results = await fetchMovies(query);
-
-      if (results.length === 0) {
-        toast.error("No movies found for your request.");
-        return;
-      }
-
-      setMovies(results);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
+  const handleSearch = (query: string): void => {
+    setQuery(query);
+    setPage(1);
   };
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["movies", query, page],
+    queryFn: () => fetchMovies(query, page),
+    enabled: query !== "",
+  });
 
   return (
     <div className={css.app}>
       <SearchBar onSubmit={handleSearch} />
 
-      {loading && <Loader />}
+      {isLoading && <Loader />}
 
-      {error && <ErrorMessage />}
+      {isError && <ErrorMessage />}
 
-      {!loading && !error && movies.length > 0 && (
-        <MovieGrid movies={movies} onSelect={setSelectedMovie} />
+      {!isLoading && !isError && data && data.results.length > 0 && (
+        <MovieGrid movies={data.results} onSelect={setSelectedMovie} />
       )}
 
       {selectedMovie && (
