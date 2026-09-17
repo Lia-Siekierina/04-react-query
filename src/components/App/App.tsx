@@ -34,7 +34,7 @@ const App = () => {
     setPage(1);
   };
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, isSuccess } = useQuery({
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
     enabled: query !== "",
@@ -62,7 +62,7 @@ const App = () => {
 
       {isError && <ErrorMessage />}
 
-      {!isLoading && !isError && data && data.results.length > 0 && (
+      {isSuccess && data.results.length > 0 && (
         <MovieGrid movies={data.results} onSelect={setSelectedMovie} />
       )}
 
